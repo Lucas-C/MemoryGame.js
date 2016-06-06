@@ -1,44 +1,32 @@
-/**
-* Javascript implementation of "Memory Game"
-* (http://en.wikipedia.org/wiki/Concentration_(game))
-*
-* Uses css3 transitions and transfomations so works in the modern browsers.
-* Currently tested in:
-*
-* Chrome 24
-* Firefox 18
-* Safari 5.1.1
-*
-* MemoryGame.js requires Event.js package, which can be acquired at the following links:
-* Github - https://github.com/mark-rolich/Event.js
-* JS Classes - http://www.jsclasses.org/package/212-JavaScript-Handle-events-in-a-browser-independent-manner.html
-*
-* @author Mark Rolich <mark.rolich@gmail.com>
-*/
-Array.prototype.shuffle = function () {
-    var temp, j, i;
+var MemoryGame = function () {
+    "use strict";
+    var info = document.getElementById('game-info'),
+        lvls = {
+            'easy': {'rows': 3, 'cols': 4, 'matches': 2},
+            'hard': {'rows': 5, 'cols': 6, 'matches': 5}
+        },
+        start = function (levelName) {
+            var lvl = lvls[levelName];
+            var currentLvl = new Level(lvl.rows, lvl.cols, lvl.matches);
+            currentLvl.onwin = function (clicks, prc) {
+                info.innerHTML = 'You\'ve found all matches in <strong>' + clicks + '</strong> clicks with <strong>' + prc + '%</strong> efficiency';
+            };
+            info.innerHTML = 'Click the cards to reveal <strong>' + lvl.matches + '</strong> matches';
+        };
 
-    for (temp, j, i = this.length; i; ) {
-        j = parseInt(Math.random () * i);
-        temp = this[--i];
-        this[i] = this[j];
-        this[j] = temp;
+    this.changeLevel = function (btn, levelName) {
+        [].forEach.call(document.getElementsByClassName('lvlButton'), function(btn) {
+            btn.disabled = false;
+        });
+        start(btn.textContent);
+        btn.disabled = true;
     }
+    
+    var firstLvlButton = document.getElementsByClassName('lvlButton')[0];
+    this.changeLevel(firstLvlButton);
 };
 
-Array.prototype.in_array = function (value) {
-    var i, result = false;
-
-    for (i = 0; i < this.length; i = i + 1) {
-        if (this[i] === value) {
-            result = true;
-        }
-    }
-
-    return result;
-};
-
-var Level = function (evt, rows, cols, matches) {
+var Level = function (rows, cols, matches) {
     "use strict";
 
     var cardsList           = '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVW[\\]^_`abcdefghijklmnopqrstuvwxyzÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜ',
@@ -209,7 +197,7 @@ var Level = function (evt, rows, cols, matches) {
                             openCards = [];
                         }
                     } else {
-                        evt.detach('mousedown', playfield, mouseHndl);
+                        (new Event()).detach('mousedown', playfield, mouseHndl);
 
                         backFlipTimer = window.setTimeout(function () {
                             card.flip(1);
@@ -219,7 +207,7 @@ var Level = function (evt, rows, cols, matches) {
                             }
 
                             openCards = [];
-                            mouseHndl = evt.attach('mousedown', playfield, play);
+                            mouseHndl = (new Event()).attach('mousedown', playfield, play);
                         }, 300);
 
                         backFlipTimer = null;
@@ -259,53 +247,28 @@ var Level = function (evt, rows, cols, matches) {
 
     draw();
 
-    mouseHndl = evt.attach('mousedown', playfield, play);
+    mouseHndl = (new Event()).attach('mousedown', playfield, play);
 };
 
-var MemoryGame = function (evt) {
-    "use strict";
-    var lvlNum      = 0,
-        info        = document.getElementById('game-info'),
-        lvlCtrls    = document.getElementById('levels'),
-        lvls        = [
-            {'rows': 3, 'cols': 4, 'matches': 2},
-            {'rows': 4, 'cols': 4, 'matches': 2},
-            {'rows': 4, 'cols': 5, 'matches': 2},
-            {'rows': 3, 'cols': 4, 'matches': 3},
-            {'rows': 3, 'cols': 5, 'matches': 3},
-            {'rows': 3, 'cols': 6, 'matches': 3},
-            {'rows': 4, 'cols': 4, 'matches': 4},
-            {'rows': 4, 'cols': 5, 'matches': 4},
-            {'rows': 4, 'cols': 6, 'matches': 4},
-            {'rows': 5, 'cols': 6, 'matches': 5}
-        ],
-        lastBtn     = lvlCtrls.childNodes[1],
-        btn         = null,
-        lvl         = lvls[lvlNum],
-        currentLvl  = null,
-        start       = function () {
-            currentLvl = new Level(evt, lvl.rows, lvl.cols, lvl.matches);
-            currentLvl.onwin = function (clicks, prc) {
-                info.innerHTML = 'You\'ve found all matches in <strong>' + clicks + '</strong> clicks with <strong>' + prc + '%</strong> efficiency';
-            };
+Array.prototype.shuffle = function () {
+    var temp, j, i;
 
-            info.innerHTML = 'Click the cards to reveal <strong>' + lvl.matches + '</strong> matches';
-        };
+    for (temp, j, i = this.length; i; ) {
+        j = parseInt(Math.random () * i);
+        temp = this[--i];
+        this[i] = this[j];
+        this[j] = temp;
+    }
+};
 
-    start();
+Array.prototype.in_array = function (value) {
+    var i, result = false;
 
-    evt.attach('mousedown', lvlCtrls, function (e, src) {
-        if (src.tagName === 'A') {
-            btn = src.parentNode;
-
-            lastBtn.className = '';
-            btn.className = 'selected';
-
-            lastBtn = btn;
-
-            lvlNum = src.getAttribute('level');
-            lvl = lvls[lvlNum];
-            start();
+    for (i = 0; i < this.length; i = i + 1) {
+        if (this[i] === value) {
+            result = true;
         }
-    });
+    }
+
+    return result;
 };
