@@ -28,6 +28,10 @@ var MemoryGame = function () {
 
 var Level = function (rows, cols, requiredMatchesCount, simultaneouslyRevealed) {
     "use strict";
+    
+    if (simultaneouslyRevealed >= requiredMatchesCount) {
+        throw new Error('Incorrect level paremeters');
+    }
 
     var cardsList           = '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVW[\\]^_`abcdefghijklmnopqrstuvwxyzÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜ',
         playfieldWrapper    = document.getElementById('playfield-wrapper'),
@@ -37,7 +41,6 @@ var Level = function (rows, cols, requiredMatchesCount, simultaneouslyRevealed) 
         clicksCnt           = 0,
         matchCount          = 0,
         openCards           = [],
-        eventMgr            = new Event(),
         Card                = function (text, pair) {
             this.state      = 'faceDown';
             this.freezed    = 0;
@@ -127,8 +130,6 @@ var Level = function (rows, cols, requiredMatchesCount, simultaneouslyRevealed) 
                 cellFrag    = document.createDocumentFragment(),
                 k           = 0;
 
-            prepare();
-
             for (var i = 0; i < rows; i = i + 1) {
                 row = row.cloneNode(false);
 
@@ -149,15 +150,16 @@ var Level = function (rows, cols, requiredMatchesCount, simultaneouslyRevealed) 
             playfield.appendChild(tbody);
             playfieldWrapper.replaceChild(playfield, playfieldWrapper.childNodes[0]);
         },
-        play = function (event, srcElem) {
-            if (srcElem.classList.contains('face')) {
-                srcElem = srcElem.parentNode;
+        play = function (event) {
+            var srcElement = event.srcElement;
+            if (srcElement.classList.contains('face')) {
+                srcElement = srcElement.parentNode;
             }
-            if (!srcElem.classList.contains('flipper')) {
+            if (!srcElement.classList.contains('flipper')) {
                 return;
             }
 
-            var card = cards[srcElem.getAttribute('idx')];
+            var card = cards[srcElement.getAttribute('idx')];
 
             if (card.freezed === 1 || openCards.contains(card)) {
                 return;
@@ -216,9 +218,10 @@ var Level = function (rows, cols, requiredMatchesCount, simultaneouslyRevealed) 
 
     this.onwin = function () {};
 
+    prepare();
     draw();
 
-    eventMgr.attach('mousedown', playfield, play);
+    playfield.onmousedown = play;
 };
 
 Array.prototype.shuffle = function () {
