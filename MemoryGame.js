@@ -1,13 +1,13 @@
 var MemoryGame = function () {
     "use strict";
-    var info = document.getElementById('game-info'),
-        lvls = {
-            'easy': {'rows': 3, 'cols': 4, 'matches': 2},
-            'hard': {'rows': 5, 'cols': 6, 'matches': 5}
+        var lvls = {
+            'easy': {'rows': 3, 'cols': 4, 'matches': 2, 'simultaneouslyRevealed': 1},
+            'hard': {'rows': 5, 'cols': 6, 'matches': 5, 'simultaneouslyRevealed': 2}
         },
         start = function (levelName) {
             var lvl = lvls[levelName];
-            var currentLvl = new Level(lvl.rows, lvl.cols, lvl.matches);
+            var currentLvl = new Level(lvl.rows, lvl.cols, lvl.matches, lvl.simultaneouslyRevealed);
+            var info = document.getElementById('game-info');
             currentLvl.onwin = function (clicks, prc) {
                 info.innerHTML = 'You\'ve found all matches in <strong>' + clicks + '</strong> clicks with <strong>' + prc + '%</strong> efficiency';
             };
@@ -26,20 +26,20 @@ var MemoryGame = function () {
     this.changeLevel(firstLvlButton);
 };
 
-var Level = function (rows, cols, matches) {
+var Level = function (rows, cols, requiredMatchesCount, simultaneouslyRevealed) {
     "use strict";
 
     var cardsList           = '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVW[\\]^_`abcdefghijklmnopqrstuvwxyzÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜ',
         playfieldWrapper    = document.getElementById('playfield-wrapper'),
         playfield           = document.createElement('table'),
         cards               = [],
-        mouseHndl           = null,
         self                = this,
         clicksCnt           = 0,
         matchCount          = 0,
         openCards           = [],
+        eventMgr            = new Event(),
         Card                = function (text, pair) {
-            this.state      = 0;
+            this.state      = 'faceDown';
             this.freezed    = 0;
             this.text       = text;
             this.pair       = pair;
@@ -85,71 +85,60 @@ var Level = function (rows, cols, matches) {
             };
 
             this.flip = function (state) {
-                if (state === 0) {
+                if (state === 'faceUp') {
                     flipper.className = 'flipper flipfront';
                     front.style.opacity = 1;
                     back.style.opacity = 0;
 
-                    this.state = 1;
-                    this.clicksCnt = this.clicksCnt + 1;
+                    this.state = 'faceUp';
+                    this.clicksCnt++;
 
                     clicks.childNodes[0].nodeValue = this.clicksCnt;
 
-                    clicksCnt = clicksCnt + 1;
-                } else if (state === 1) {
+                    clicksCnt++;
+                } else if (state === 'faceDown') {
                     flipper.className = 'flipper flipback';
                     front.style.opacity = 0;
                     back.style.opacity = 1;
-                    this.state = 0;
+                    this.state = 'faceDown';
                 }
             };
 
             this.pulse = function () {
-                var pulseTimer = null;
-
                 flipper.className = 'flipper flipfront pulse';
-
-                pulseTimer = window.setTimeout(function () {
+                window.setTimeout(function () {
                     flipper.parentNode.style.opacity = '0.3';
                 }, 1000);
-
-                pulseTimer = null;
             };
         },
-        prepare             = function () {
-            var i = 0,
-                j = 0;
-
-            for (i = 0; i < (rows * cols) / matches; i = i + 1) {
-                for (j = 0; j < matches; j = j + 1) {
+        prepare = function () {
+            for (var i = 0; i < (rows * cols) / requiredMatchesCount; i++) {
+                for (var j = 0; j < requiredMatchesCount; j++) {
                     cards.push(new Card(cardsList[i], i));
                 }
             }
-
             cards.shuffle();
         },
-        draw                = function () {
+        draw = function () {
             var tbody       = document.createElement('tbody'),
                 row         = document.createElement('tr'),
                 cell        = document.createElement('td'),
                 rowFrag     = document.createDocumentFragment(),
                 cellFrag    = document.createDocumentFragment(),
-                i           = 0,
-                j           = 0,
                 k           = 0;
 
             prepare();
 
-            for (i = 0; i < rows; i = i + 1) {
+            for (var i = 0; i < rows; i = i + 1) {
                 row = row.cloneNode(false);
 
-                for (j = 0; j < cols; j = j + 1) {
+                for (var j = 0; j < cols; j = j + 1) {
                     cell = cell.cloneNode(false);
 
                     cards[k].draw(k, cell);
                     cellFrag.appendChild(cell);
 
-                    k = k + 1;
+                    k++;
                 }
 
                 row.appendChild(cellFrag);
@@ -160,80 +149,62 @@ var Level = function (rows, cols, matches) {
             playfield.appendChild(tbody);
             playfieldWrapper.replaceChild(playfield, playfieldWrapper.childNodes[0]);
         },
-        play                = function (e, src) {
-            var isFace      = (src.className.indexOf('face') !== -1),
-                isFlipper   = (src.className === 'flipper'),
-                card        = null,
-                i           = 0,
-                backFlipTimer = null;
+        play = function (event, srcElem) {
+            if (srcElem.classList.contains('face')) {
+                srcElem = srcElem.parentNode;
+            }
+            if (!srcElem.classList.contains('flipper')) {
+                return;
+            }
 
-            if (isFace || isFlipper) {
-                if (isFace) {
-                    src = src.parentNode;
-                }
+            var card = cards[srcElem.getAttribute('idx')];
 
-                card = cards[src.getAttribute('idx')];
+            if (card.freezed === 1 || openCards.contains(card)) {
+                return;
+            }
 
-                if (card.freezed === 1) {
-                    return;
-                }
+            openCards.push(card);
 
-                if (openCards.length === 0) {
-                    openCards.push(card);
-                } else if (!openCards.in_array(card) && openCards.length < matches) {
-                    if (openCards[openCards.length - 1].pair === card.pair) {
-                        openCards.push(card);
-
-                        if (openCards.length === matches) {
-                            card.flip(0);
-
-                            for (i = 0; i < openCards.length; i = i + 1) {
-                                openCards[i].freezed = 1;
-                                openCards[i].pulse();
-                            }
-
-                            matchCount = matchCount + 1;
-
-                            openCards = [];
-                        }
-                    } else {
-                        (new Event()).detach('mousedown', playfield, mouseHndl);
-
-                        backFlipTimer = window.setTimeout(function () {
-                            card.flip(1);
-
-                            for (i = 0; i < openCards.length; i = i + 1) {
-                                openCards[i].flip(1);
-                            }
-
-                            openCards = [];
-                            mouseHndl = (new Event()).attach('mousedown', playfield, play);
-                        }, 300);
-
-                        backFlipTimer = null;
+            if (openCards.length > 1) {
+                var lastOpenCard = openCards[openCards.length - 2];
+                if (lastOpenCard.pair === card.pair && openCards.length == requiredMatchesCount) { // Pair found !
+                    card.flip('faceUp');
+                    for (var i = 0; i < openCards.length; i = i + 1) {
+                        openCards[i].freezed = 1;
+                        openCards[i].pulse();
                     }
+                    matchCount++;
+                    openCards = [];
+                } else {
+                    window.setTimeout(function () { // delayed after the face flip
+                        while (openCards.length > simultaneouslyRevealed && openCards.some(function (c) { return c.pair != card.pair})) {
+                            var cardToHideIndex = openCards.findIndex(function (c) { return c.pair != card.pair});
+                            openCards[cardToHideIndex].flip('faceDown');
+                            openCards.splice(cardToHideIndex, 1); // remove card from array
+                        }
+                    }, 300);
                 }
 
-                if (card.state === 0) {
-                    card.flip(0);
-                }
+            }
+            if (card.state === 'faceDown') {
+                card.flip('faceUp');
+            }
 
-                if (matchCount === (rows * cols) / matches) {
-                    playfieldWrapper.className = 'win';
+            if (matchCount === (rows * cols) / requiredMatchesCount) {
+                playfieldWrapper.className = 'win';
 
-                    window.setTimeout(function () {
-                        playfield.className = 'play-field win';
-                        self.onwin(clicksCnt, Math.round(((rows * cols) * 100) / clicksCnt));
-                        playfieldWrapper.className = '';
-                    }, 1500);
+                window.setTimeout(function () {
+                    playfield.className = 'play-field win';
+                    self.onwin(clicksCnt, Math.round(((rows * cols) * 100) / clicksCnt));
+                    playfieldWrapper.className = '';
+                }, 1500);
 
-                }
             }
         };
 
-    if ((rows * cols) / matches > cardsList.length) {
+    if ((rows * cols) / requiredMatchesCount > cardsList.length) {
         throw ('There are not enough cards to display the playing field');
-    } else if ((rows * cols) % matches !== 0) {
+    } else if ((rows * cols) % requiredMatchesCount !== 0) {
         throw ('Out of bounds');
     }
 
@@ -247,7 +218,7 @@ var Level = function (rows, cols, matches) {
 
     draw();
 
-    mouseHndl = (new Event()).attach('mousedown', playfield, play);
+    eventMgr.attach('mousedown', playfield, play);
 };
 
 Array.prototype.shuffle = function () {
@@ -261,7 +232,7 @@ Array.prototype.shuffle = function () {
     }
 };
 
-Array.prototype.in_array = function (value) {
+Array.prototype.contains = function (value) {
     var i, result = false;
 
     for (i = 0; i < this.length; i = i + 1) {

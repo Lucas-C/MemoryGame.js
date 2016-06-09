@@ -34,7 +34,7 @@ h1 {
 }
 
 p {
-    margin: 20px 0 0;
+    margin: 20px;
     padding: 0;
     width: 100%;
     text-align: center;
@@ -79,13 +79,21 @@ p strong {
     width: 100%
 }
 
-.lvlList {
-    list-style: none;
+.lvlButton {
+    margin: .5rem;
+    line-height: 25px;
+    font-weight: bold;
+    color: #fff;
+    border-radius: 3px;
+    background-color: orange;
+    border: solid 1px #DC930B;
+    border-top: solid 1px #FFC04D;
 }
 
 .lvlButton:disabled {
+    background-color: #2B54BF;
+    border: solid 1px #284EAE;
     border-top: solid 1px #6B88D2;
-    background-color: #2B54BF
 }
 
 .footer {
