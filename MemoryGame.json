@@ -1,0 +1,29 @@
+{
+  "cardDimensionsPx": {
+    "externalGutter": 10,
+    "internalGutter": 10,
+    "height": 80,
+    "width": 80
+  },
+  "lvls": {
+    "easy": {
+      "rows": 3,
+      "cols": 4,
+      "requiredMatches": 2,
+      "simultaneouslyRevealed": 1
+    },
+    "medium": {
+      "rows": 4,
+      "cols": 7,
+      "requiredMatches": 2,
+      "simultaneouslyRevealed": 0
+    },
+    "hard": {
+      "rows": 6,
+      "cols": 6,
+      "requiredMatches": 3,
+      "simultaneouslyRevealed": 2,
+      "panicMode": true
+    }
+  }
+}

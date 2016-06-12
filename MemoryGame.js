@@ -1,12 +1,8 @@
-var PULSE_DURATION = 1000;
-
-var MemoryGame = function () {
+var PULSE_DURATION = 1000,
+    DISPLAY_CHARS = '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVW[\\]^_`abcdefghijklmnopqrstuvwxyzÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜ'.split('');
+        
+var MemoryGame = function (gameData) {
     'use strict';
-    var lvls = {
-        'easy':   {'rows': 3, 'cols': 4, 'requiredMatches': 2, 'simultaneouslyRevealed': 1},
-        'medium': {'rows': 4, 'cols': 7, 'requiredMatches': 2, 'simultaneouslyRevealed': 1, 'panicMode': true},
-        'hard':   {'rows': 5, 'cols': 6, 'requiredMatches': 5, 'simultaneouslyRevealed': 2},
-    }
 
     this.changeLevel = function (btn, levelName) {
         // We update the buttons states:
@@ -21,28 +17,34 @@ var MemoryGame = function () {
         playfieldWrapper.className = '';
 
         // We initialize the new Level:
-        var lvl = lvls[btn.textContent];
-        var currentLvl = new Level(lvl);
+        var lvlParams = gameData.lvls[btn.textContent],
+            currentLvl = new Level(lvlParams, gameData.pics, gameData.cardDimensionsPx);
 
         // We set the help message
         var infoTextNode = document.getElementById('game-info');
-        infoTextNode.innerHTML = 'Click the cards to reveal <strong>' + lvl.requiredMatches + '</strong> matches';
+        infoTextNode.innerHTML = 'Click the cards to reveal <strong>' + lvlParams.requiredMatches + '</strong> matches';
 
         // We set the victory message
         currentLvl.onwin = function (clicks, prc) {
             infoTextNode.innerHTML = 'You\'ve found all matches in <strong>' + clicks + '</strong> clicks with <strong>' + prc + '%</strong> efficiency';
         };
-    }
+    };
     
+    var cardCssRule = cssRules()['.card'];
+    cardCssRule.style.width = gameData.cardDimensionsPx.width + 'px';
+    cardCssRule.style.height = gameData.cardDimensionsPx.height + 'px';
+    var faceCssRule = cssRules()['.face'];
+    faceCssRule.style.width = (gameData.cardDimensionsPx.width - gameData.cardDimensionsPx.internalGutter) + 'px';
+    faceCssRule.style.height = (gameData.cardDimensionsPx.height - gameData.cardDimensionsPx.internalGutter) + 'px';
+
     var firstLvlButton = document.getElementsByClassName('lvlButton')[0];
     this.changeLevel(firstLvlButton);
 };
 
-var Level = function (lvlParams) {
+var Level = function (lvlParams, pics, cardDimensionsPx) {
     "use strict";
     
-    var cardsList            = '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVW[\\]^_`abcdefghijklmnopqrstuvwxyzÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜ'.split(''),
-        playfieldWrapper     = document.getElementById('playfield-wrapper'),
+    var playfieldWrapper     = document.getElementById('playfield-wrapper'),
         playfield            = document.createElement('div'),
         cards                = [],
         self                 = this,
@@ -50,9 +52,17 @@ var Level = function (lvlParams) {
         openCards            = [],
         lastPanicTranslation = 'vertical',
         prepare = function () {
+            var picsOrChars = DISPLAY_CHARS;
+            if (pics) {
+                picsOrChars = pics;
+            }
+            if ((lvlParams.rows * lvlParams.cols) / lvlParams.requiredMatches > picsOrChars.length) {
+                throw new Error('There are not enough cards to display the playing field');
+            }
+            picsOrChars.shuffle();
             for (var i = 0; i < (lvlParams.rows * lvlParams.cols) / lvlParams.requiredMatches; i++) {
                 for (var j = 0; j < lvlParams.requiredMatches; j++) {
-                    cards.push(new Card(cardsList[i], i, self));
+                    cards.push(new Card(picsOrChars[i], i, self));
                 }
             }
             cards.shuffle();
@@ -66,12 +76,12 @@ var Level = function (lvlParams) {
                         card = cards[cardIndex];
                     card.draw(cardIndex);
                     card.domElement.setAttribute('idx', cardIndex);
-                    card.domElement.style.top = (i * 90) + 'px';
+                    card.domElement.style.top = (i * (cardDimensionsPx.height + cardDimensionsPx.externalGutter)) + 'px';
                     card.domElement.style.left = '-1000px'; // Initially positionned outside the screen, on the left
                     playfieldFrag.appendChild(card.domElement);
                     // Triggering the arrival transitions, waterfall-style
                     setTimeout(function (card, j) {
-                        card.domElement.style.left = (j * 90) + 'px';
+                        card.domElement.style.left = (j * (cardDimensionsPx.width + cardDimensionsPx.externalGutter)) + 'px';
                     }, 100 * cardIndex, card, j);
                 }
             }
@@ -158,7 +168,7 @@ var Level = function (lvlParams) {
         // Those 2 functions do 3 important things :
         // - update the cards position inside $cards
         // - update their idx attributes
-        // - update their style.left
+        // - update their style.left/.top
         triggerHorizontalTranslation = function (rowY) {
             var rowYcards = cards.slice(rowY * lvlParams.cols, rowY * lvlParams.cols + lvlParams.cols);
             rowYcards.forEach(function (card) {
@@ -168,7 +178,7 @@ var Level = function (lvlParams) {
                     newCardIndex = rowY * lvlParams.cols + newX;
                 cards[newCardIndex] = card;
                 card.domElement.setAttribute('idx', newCardIndex);
-                card.domElement.style.left = (newX * 90) + 'px';
+                card.domElement.style.left = (newX * (cardDimensionsPx.width + cardDimensionsPx.externalGutter)) + 'px';
             });
         },
         triggerVerticalTranslation = function (colX) {
@@ -184,23 +194,19 @@ var Level = function (lvlParams) {
                     newCardIndex = newY * lvlParams.cols + colX;
                 cards[newCardIndex] = card;
                 card.domElement.setAttribute('idx', newCardIndex);
-                card.domElement.style.top = (newY * 90) + 'px';
+                card.domElement.style.top = (newY * (cardDimensionsPx.height + cardDimensionsPx.externalGutter)) + 'px';
             });
         };
 
     if (lvlParams.simultaneouslyRevealed >= lvlParams.requiredMatches) {
         throw new Error('Incorrect level parameters');
-    } else if ((lvlParams.rows * lvlParams.cols) / lvlParams.requiredMatches > cardsList.length) {
-        throw new Error('There are not enough cards to display the playing field');
     } else if ((lvlParams.rows * lvlParams.cols) % lvlParams.requiredMatches !== 0) {
         throw new Error('$rows x $cols is not a multiple of $requiredMatches');
     }
 
     playfield.className = 'play-field';
-    playfield.style.left = '-' + (lvlParams.cols * 45) + 'px';
+    playfield.style.left = '-' + (lvlParams.cols * (cardDimensionsPx.width / 2)) + 'px';
     playfield.onmousedown = play;
-
-    cardsList.shuffle();
 
     self.totalClicksCount = 0;
     self.onwin = function () {};
@@ -209,12 +215,12 @@ var Level = function (lvlParams) {
     draw();
 };
 
-var Card = function (text, pair, lvl) {
+var Card = function (picOrChar, pair, lvl) {
     this.state      = 'faceDown';
     this.freezed    = 0;
-    this.text       = text;
+    this.picOrChar  = picOrChar;
     this.pair       = pair;
-    this.clicksCnt     = 0;
+    this.clicksCnt  = 0;
 
     var flipper = null,
         front   = null,
@@ -222,31 +228,28 @@ var Card = function (text, pair, lvl) {
         clicks  = null;
 
     this.draw = function () {
-        var txt = document.createTextNode(this.text);
-
         this.domElement = document.createElement('div');
-
-        flipper = this.domElement.cloneNode(false);
-
-        front   = this.domElement.cloneNode(false);
-        back    = this.domElement.cloneNode(false);
-        clicks  = this.domElement.cloneNode(false);
-
         this.domElement.className = 'card';
-        flipper.className = 'flipper';
-        front.className = 'front face icon';
-        back.className = 'back face';
-        clicks.className = 'clicks';
-        clicks.appendChild(document.createTextNode('\xA0'));
 
-        front.appendChild(txt);
+        back = this.domElement.cloneNode(false);
+        back.className = 'back face';
+
+        front = this.domElement.cloneNode(false);
+        front.className = 'front face icon';
+        if (this.picOrChar.length === 1) {
+            var txt = document.createTextNode(this.picOrChar);
+            front.appendChild(txt);
+        } else {
+            front.style['background-image'] = 'url("' + this.picOrChar + '")';
+        }
+
+        clicks = this.domElement.cloneNode(false);
+        clicks.className = 'clicks';
+        clicks.appendChild(document.createTextNode('\xA0')); // newline
         front.appendChild(clicks);
 
-        txt = txt.cloneNode(false);
-        txt.nodeValue = '\xA0';
-
-        back.appendChild(txt);
-
+        flipper = this.domElement.cloneNode(false);
+        flipper.className = 'flipper';
         flipper.appendChild(back);
         flipper.appendChild(front);
 
@@ -302,4 +305,14 @@ Array.prototype.contains = function (value) {
     }
 
     return result;
+};
+
+function cssRules(){
+    var rules = {};
+    [].forEach.call(document.styleSheets, function (styleSheet) {
+        [].forEach.call(styleSheet.cssRules, function (cssRule) {
+            rules[cssRule.selectorText] = cssRule;
+        });
+    });
+    return rules;
 };

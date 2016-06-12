@@ -26,7 +26,7 @@ body {
 }
 
 h1 {
-    margin: 30px 0 0;
+    margin: 10px 0 0;
     padding: 0;
     width: 100%;
     text-align: center;
@@ -34,7 +34,7 @@ h1 {
 }
 
 p {
-    margin: 20px;
+    margin: 7px;
     padding: 0;
     width: 100%;
     text-align: center;
@@ -161,12 +161,10 @@ p strong {
 
 .card {
     position: absolute;
-    width: 80px;
-    height: 80px;
     font-size: 64px;
-    line-height: 70px;
     cursor: default;
     transition: left 0.5s, top 0.5s;
+    -webkit-transition: left 0.5s, top 0.5s;
 }
 
 .flipper {
@@ -187,8 +185,7 @@ p strong {
     border-radius: 3px;
     background-color: #fff;
     position: absolute;
-    width: 70px;
-    height: 70px;
+    line-height: 60px;
     box-shadow: inset 0px 0px 4px #aaa;
     margin: 4px;
 }
@@ -223,6 +220,9 @@ p strong {
 }
 
 .face {
+    background-size: 100%;
+    background-position: center;
+    background-repeat: no-repeat;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     transition: opacity 0.15s linear;

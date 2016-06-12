@@ -3,6 +3,7 @@
 <head>
   <title>Memory Game</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <link rel="stylesheet" href="raphaelicons/raphaelicons.css" type="text/css">
   <link rel="stylesheet" type="text/css" href="MemoryGame.css">
 </head>
 <body>
@@ -21,7 +22,17 @@
 
   <script type="text/javascript" src="MemoryGame.js"></script>
   <script type="text/javascript">
-    window.game = new MemoryGame();
+    var req = new XMLHttpRequest();
+    req.open('GET', 'MemoryGameData_MariageSM.json', /*async=*/true);
+    //req.open('GET', 'MemoryGame.json', /*async=*/true);
+    req.onreadystatechange = function () {
+        if (req.readyState !== 4) { return; }
+        if(req.status !== 200) {
+            throw new Error('[' + req.status + '] : "' + req.statusText + '" - "' + req.responseText + '"');
+        }
+        window.game = new MemoryGame(JSON.parse(req.responseText));
+    }
+    req.send(null);
   </script>
   </body>
 </html>
