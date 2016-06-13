@@ -1,4 +1,5 @@
 var PULSE_DURATION = 1000,
+    CARD_CSS_INTERNAL_MARGIN = 10,
     DISPLAY_CHARS = '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVW[\\]^_`abcdefghijklmnopqrstuvwxyzÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜ'.split('');
         
 var MemoryGame = function (gameData) {
@@ -34,8 +35,8 @@ var MemoryGame = function (gameData) {
     cardCssRule.style.width = gameData.cardDimensionsPx.width + 'px';
     cardCssRule.style.height = gameData.cardDimensionsPx.height + 'px';
     var faceCssRule = cssRules()['.face'];
-    faceCssRule.style.width = (gameData.cardDimensionsPx.width - gameData.cardDimensionsPx.internalGutter) + 'px';
-    faceCssRule.style.height = (gameData.cardDimensionsPx.height - gameData.cardDimensionsPx.internalGutter) + 'px';
+    faceCssRule.style.width = (gameData.cardDimensionsPx.width - CARD_CSS_INTERNAL_MARGIN) + 'px';
+    faceCssRule.style.height = (gameData.cardDimensionsPx.height - CARD_CSS_INTERNAL_MARGIN) + 'px';
 
     var firstLvlButton = document.getElementsByClassName('lvlButton')[0];
     this.changeLevel(firstLvlButton);
@@ -76,12 +77,12 @@ var Level = function (lvlParams, pics, cardDimensionsPx) {
                         card = cards[cardIndex];
                     card.draw(cardIndex);
                     card.domElement.setAttribute('idx', cardIndex);
-                    card.domElement.style.top = (i * (cardDimensionsPx.height + cardDimensionsPx.externalGutter)) + 'px';
+                    card.domElement.style.top = (i * (cardDimensionsPx.height + cardDimensionsPx.gutter)) + 'px';
                     card.domElement.style.left = '-1000px'; // Initially positionned outside the screen, on the left
                     playfieldFrag.appendChild(card.domElement);
                     // Triggering the arrival transitions, waterfall-style
                     setTimeout(function (card, j) {
-                        card.domElement.style.left = (j * (cardDimensionsPx.width + cardDimensionsPx.externalGutter)) + 'px';
+                        card.domElement.style.left = (j * (cardDimensionsPx.width + cardDimensionsPx.gutter)) + 'px';
                     }, 100 * cardIndex, card, j);
                 }
             }
@@ -141,11 +142,16 @@ var Level = function (lvlParams, pics, cardDimensionsPx) {
                     }
                 } else {
                     window.setTimeout(function () { // delayed after the face flip
-                        while (openCards.length > lvlParams.simultaneouslyRevealed
-                               && openCards.some(function (c) { return c.pair != card.pair})) {
-                            var cardToHideIndex = openCards.findIndex(function (c) { return c.pair != card.pair});
-                            openCards[cardToHideIndex].flip('faceDown');
-                            openCards.splice(cardToHideIndex, 1); // remove card from array
+                        if (keptRevealed === 0 && !openCards.all(function (c) { return c.pair == card.pair})) {
+                            // Mark Rolich original version behaviour
+                            openCards.forEach(function(c) { c.flip('faceDown'); });
+                            openCards = [];
+                        } else {
+                            while (openCards.length > keptRevealed && openCards.some(function (c) { return c.pair != card.pair})) {
+                                var cardToHideIndex = openCards.findIndex(function (c) { return c.pair != card.pair});
+                                openCards[cardToHideIndex].flip('faceDown');
+                                openCards.splice(cardToHideIndex, 1); // remove card from array
+                            }
                         }
                     }, 300);
                 }
@@ -178,7 +184,7 @@ var Level = function (lvlParams, pics, cardDimensionsPx) {
                     newCardIndex = rowY * lvlParams.cols + newX;
                 cards[newCardIndex] = card;
                 card.domElement.setAttribute('idx', newCardIndex);
-                card.domElement.style.left = (newX * (cardDimensionsPx.width + cardDimensionsPx.externalGutter)) + 'px';
+                card.domElement.style.left = (newX * (cardDimensionsPx.width + cardDimensionsPx.gutter)) + 'px';
             });
         },
         triggerVerticalTranslation = function (colX) {
@@ -194,11 +200,11 @@ var Level = function (lvlParams, pics, cardDimensionsPx) {
                     newCardIndex = newY * lvlParams.cols + colX;
                 cards[newCardIndex] = card;
                 card.domElement.setAttribute('idx', newCardIndex);
-                card.domElement.style.top = (newY * (cardDimensionsPx.height + cardDimensionsPx.externalGutter)) + 'px';
+                card.domElement.style.top = (newY * (cardDimensionsPx.height + cardDimensionsPx.gutter)) + 'px';
             });
         };
 
-    if (lvlParams.simultaneouslyRevealed >= lvlParams.requiredMatches) {
+    if (lvlParams.keptRevealed >= lvlParams.requiredMatches) {
         throw new Error('Incorrect level parameters');
     } else if ((lvlParams.rows * lvlParams.cols) % lvlParams.requiredMatches !== 0) {
         throw new Error('$rows x $cols is not a multiple of $requiredMatches');

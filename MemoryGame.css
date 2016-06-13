@@ -155,10 +155,6 @@ p strong {
     opacity: 1
 }
 
-.play-field td {
-    padding: 5px;
-}
-
 .card {
     position: absolute;
     font-size: 64px;
