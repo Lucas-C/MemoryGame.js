@@ -1,3 +1,12 @@
+// Polyfill from https://developer.mozilla.org/en-US/docs/Web/API/ChildNode/remove
+if (!('remove' in Element.prototype)) {
+    Element.prototype.remove = function() {
+        if (this.parentNode) {
+            this.parentNode.removeChild(this);
+        }
+    };
+}
+
 var PULSE_DURATION = 1000,
     DISPLAY_CHARS = '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVW[\\]^_`abcdefghijklmnopqrstuvwxyzÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜ'.split('');
         
@@ -13,8 +22,9 @@ var MemoryGame = function (gameData) {
 
         // We remove the old Level:
         var playfieldWrapper = document.getElementById('playfield-wrapper');
-        playfieldWrapper.childNodes[0] = document.createTextNode('&nbsp;');
-        playfieldWrapper.className = '';
+        if (playfieldWrapper.childNodes.length > 1) {
+            playfieldWrapper.childNodes[1].remove();
+        }
 
         // We initialize the new Level:
         var lvlParams = gameData.lvls[btn.textContent],
@@ -80,7 +90,7 @@ var Level = function (lvlParams, pics, cardDimensions) {
             }
 
             playfield.appendChild(playfieldFrag);
-            playfieldWrapper.replaceChild(playfield, playfieldWrapper.childNodes[0]); // replace TextNode('&nbsp;')
+            playfieldWrapper.appendChild(playfield);
         },
         play = function (event) {
             var srcElement = event.srcElement;

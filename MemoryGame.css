@@ -211,9 +211,9 @@ p strong {
 /* Card animation */
 
 .flipper {
-    transform-style: preserve-3d;
-    transition: transform 0.15s linear;
+    transform-style: preserve-3d; /* NOT IE11-friendly -> TODO: http://stackoverflow.com/a/22849231/636849 */
     -webkit-transform-style: preserve-3d;
+    transition: transform 0.15s linear;
     -webkit-transition: -webkit-transform 0.15s linear;
 }
 
