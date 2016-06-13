@@ -1,5 +1,6 @@
 {
-  "cardDimensionsPx": {
+  "cardDimensions": {
+    "unit": "px",
     "gutter": 10,
     "height": 80,
     "width": 80

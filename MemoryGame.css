@@ -183,7 +183,9 @@ p strong {
     position: absolute;
     line-height: 60px;
     box-shadow: inset 0px 0px 4px #aaa;
-    margin: 4px;
+    margin: 5%;
+    height: 90%;
+    width: 90%;
 }
 
 .front {

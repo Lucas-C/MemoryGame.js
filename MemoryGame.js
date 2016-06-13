@@ -1,5 +1,4 @@
 var PULSE_DURATION = 1000,
-    CARD_CSS_INTERNAL_MARGIN = 10,
     DISPLAY_CHARS = '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVW[\\]^_`abcdefghijklmnopqrstuvwxyzÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜ'.split('');
         
 var MemoryGame = function (gameData) {
@@ -19,7 +18,7 @@ var MemoryGame = function (gameData) {
 
         // We initialize the new Level:
         var lvlParams = gameData.lvls[btn.textContent],
-            currentLvl = new Level(lvlParams, gameData.pics, gameData.cardDimensionsPx);
+            currentLvl = new Level(lvlParams, gameData.pics, gameData.cardDimensions);
 
         // We set the help message
         var infoTextNode = document.getElementById('game-info');
@@ -31,18 +30,11 @@ var MemoryGame = function (gameData) {
         };
     };
     
-    var cardCssRule = cssRules()['.card'];
-    cardCssRule.style.width = gameData.cardDimensionsPx.width + 'px';
-    cardCssRule.style.height = gameData.cardDimensionsPx.height + 'px';
-    var faceCssRule = cssRules()['.face'];
-    faceCssRule.style.width = (gameData.cardDimensionsPx.width - CARD_CSS_INTERNAL_MARGIN) + 'px';
-    faceCssRule.style.height = (gameData.cardDimensionsPx.height - CARD_CSS_INTERNAL_MARGIN) + 'px';
-
     var firstLvlButton = document.getElementsByClassName('lvlButton')[0];
     this.changeLevel(firstLvlButton);
 };
 
-var Level = function (lvlParams, pics, cardDimensionsPx) {
+var Level = function (lvlParams, pics, cardDimensions) {
     "use strict";
     
     var playfieldWrapper     = document.getElementById('playfield-wrapper'),
@@ -63,7 +55,7 @@ var Level = function (lvlParams, pics, cardDimensionsPx) {
             picsOrChars.shuffle();
             for (var i = 0; i < (lvlParams.rows * lvlParams.cols) / lvlParams.requiredMatches; i++) {
                 for (var j = 0; j < lvlParams.requiredMatches; j++) {
-                    cards.push(new Card(picsOrChars[i], i, self));
+                    cards.push(new Card(picsOrChars[i], i, self, cardDimensions));
                 }
             }
             cards.shuffle();
@@ -77,12 +69,12 @@ var Level = function (lvlParams, pics, cardDimensionsPx) {
                         card = cards[cardIndex];
                     card.draw(cardIndex);
                     card.domElement.setAttribute('idx', cardIndex);
-                    card.domElement.style.top = (i * (cardDimensionsPx.height + cardDimensionsPx.gutter)) + 'px';
+                    card.domElement.style.top = (i * (cardDimensions.height + cardDimensions.gutter)) + cardDimensions.unit;
                     card.domElement.style.left = '-1000px'; // Initially positionned outside the screen, on the left
                     playfieldFrag.appendChild(card.domElement);
                     // Triggering the arrival transitions, waterfall-style
                     setTimeout(function (card, j) {
-                        card.domElement.style.left = (j * (cardDimensionsPx.width + cardDimensionsPx.gutter)) + 'px';
+                        card.domElement.style.left = (j * (cardDimensions.width + cardDimensions.gutter)) + cardDimensions.unit;
                     }, 100 * cardIndex, card, j);
                 }
             }
@@ -142,12 +134,12 @@ var Level = function (lvlParams, pics, cardDimensionsPx) {
                     }
                 } else {
                     window.setTimeout(function () { // delayed after the face flip
-                        if (keptRevealed === 0 && !openCards.all(function (c) { return c.pair == card.pair})) {
+                        if (lvlParams.keptRevealed === 0 && !openCards.every(function (c) { return c.pair == card.pair})) {
                             // Mark Rolich original version behaviour
                             openCards.forEach(function(c) { c.flip('faceDown'); });
                             openCards = [];
                         } else {
-                            while (openCards.length > keptRevealed && openCards.some(function (c) { return c.pair != card.pair})) {
+                            while (openCards.length > lvlParams.keptRevealed && openCards.some(function (c) { return c.pair != card.pair})) {
                                 var cardToHideIndex = openCards.findIndex(function (c) { return c.pair != card.pair});
                                 openCards[cardToHideIndex].flip('faceDown');
                                 openCards.splice(cardToHideIndex, 1); // remove card from array
@@ -184,7 +176,7 @@ var Level = function (lvlParams, pics, cardDimensionsPx) {
                     newCardIndex = rowY * lvlParams.cols + newX;
                 cards[newCardIndex] = card;
                 card.domElement.setAttribute('idx', newCardIndex);
-                card.domElement.style.left = (newX * (cardDimensionsPx.width + cardDimensionsPx.gutter)) + 'px';
+                card.domElement.style.left = (newX * (cardDimensions.width + cardDimensions.gutter)) + cardDimensions.unit;
             });
         },
         triggerVerticalTranslation = function (colX) {
@@ -200,7 +192,7 @@ var Level = function (lvlParams, pics, cardDimensionsPx) {
                     newCardIndex = newY * lvlParams.cols + colX;
                 cards[newCardIndex] = card;
                 card.domElement.setAttribute('idx', newCardIndex);
-                card.domElement.style.top = (newY * (cardDimensionsPx.height + cardDimensionsPx.gutter)) + 'px';
+                card.domElement.style.top = (newY * (cardDimensions.height + cardDimensions.gutter)) + cardDimensions.unit;
             });
         };
 
@@ -211,7 +203,7 @@ var Level = function (lvlParams, pics, cardDimensionsPx) {
     }
 
     playfield.className = 'play-field';
-    playfield.style.left = '-' + (lvlParams.cols * (cardDimensionsPx.width / 2)) + 'px';
+    playfield.style.left = '-' + (lvlParams.cols * (cardDimensions.width / 2)) + cardDimensions.unit;
     playfield.onmousedown = play;
 
     self.totalClicksCount = 0;
@@ -221,7 +213,7 @@ var Level = function (lvlParams, pics, cardDimensionsPx) {
     draw();
 };
 
-var Card = function (picOrChar, pair, lvl) {
+var Card = function (picOrChar, pair, lvl, cardDimensions) {
     this.state      = 'faceDown';
     this.freezed    = 0;
     this.picOrChar  = picOrChar;
@@ -235,7 +227,6 @@ var Card = function (picOrChar, pair, lvl) {
 
     this.draw = function () {
         this.domElement = document.createElement('div');
-        this.domElement.className = 'card';
 
         back = this.domElement.cloneNode(false);
         back.className = 'back face';
@@ -258,6 +249,10 @@ var Card = function (picOrChar, pair, lvl) {
         flipper.className = 'flipper';
         flipper.appendChild(back);
         flipper.appendChild(front);
+
+        this.domElement.className = 'card';
+        this.domElement.style.width = cardDimensions.width + cardDimensions.unit;
+        this.domElement.style.height = cardDimensions.height + cardDimensions.unit;
 
         this.domElement.appendChild(flipper);
     };
@@ -311,14 +306,4 @@ Array.prototype.contains = function (value) {
     }
 
     return result;
-};
-
-function cssRules(){
-    var rules = {};
-    [].forEach.call(document.styleSheets, function (styleSheet) {
-        [].forEach.call(styleSheet.cssRules, function (cssRule) {
-            rules[cssRule.selectorText] = cssRule;
-        });
-    });
-    return rules;
 };
