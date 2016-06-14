@@ -1,10 +1,32 @@
-// Polyfill from https://developer.mozilla.org/en-US/docs/Web/API/ChildNode/remove
+// Polyfills from https://developer.mozilla.org/en-US/docs/Web
 if (!('remove' in Element.prototype)) {
     Element.prototype.remove = function() {
         if (this.parentNode) {
             this.parentNode.removeChild(this);
         }
     };
+}
+if (!Array.prototype.findIndex) {
+  Array.prototype.findIndex = function(predicate) {
+    if (this === null) {
+      throw new TypeError('Array.prototype.findIndex called on null or undefined');
+    }
+    if (typeof predicate !== 'function') {
+      throw new TypeError('predicate must be a function');
+    }
+    var list = Object(this);
+    var length = list.length >>> 0;
+    var thisArg = arguments[1];
+    var value;
+
+    for (var i = 0; i < length; i++) {
+      value = list[i];
+      if (predicate.call(thisArg, value, i, list)) {
+        return i;
+      }
+    }
+    return -1;
+  };
 }
 
 var PULSE_DURATION = 1000,
@@ -213,7 +235,7 @@ var Level = function (lvlParams, pics, cardDimensions) {
     }
 
     playfield.className = 'play-field';
-    playfield.style.left = '-' + (lvlParams.cols * (cardDimensions.width / 2)) + cardDimensions.unit;
+    playfield.style.left = '-' + (lvlParams.cols * (cardDimensions.width + cardDimensions.gutter) / 2) + cardDimensions.unit;
     playfield.onmousedown = play;
 
     self.totalClicksCount = 0;
@@ -242,7 +264,7 @@ var Card = function (picOrChar, pair, lvl, cardDimensions) {
         back.className = 'back face';
 
         front = this.domElement.cloneNode(false);
-        front.className = 'front face icon';
+        front.className = 'front face';
         if (this.picOrChar.length === 1) {
             var txt = document.createTextNode(this.picOrChar);
             front.appendChild(txt);

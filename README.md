@@ -13,5 +13,5 @@ Using [`jq`](https://stedolan.github.io/jq), you can quickly generate a starting
 
 ### ToDo
 
-- test under IE
+- fix vh rendering with IE
 - test under mobile
