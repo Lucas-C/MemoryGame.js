@@ -31,7 +31,6 @@ if (!Array.prototype.findIndex) {
 
 var PULSE_DURATION = 1000,
     DISPLAY_CHARS = '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVW[\\]^_`abcdefghijklmnopqrstuvwxyzÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜ'.split('');
-        
 var MemoryGame = function (gameData) {
     'use strict';
 
@@ -61,14 +60,14 @@ var MemoryGame = function (gameData) {
             infoTextNode.innerHTML = 'You\'ve found all matches in <strong>' + clicks + '</strong> clicks with <strong>' + prc + '%</strong> efficiency';
         };
     };
-    
+
     var firstLvlButton = document.getElementsByClassName('lvlButton')[0];
     this.changeLevel(firstLvlButton);
 };
 
 var Level = function (lvlParams, pics, cardDimensions) {
     "use strict";
-    
+
     var playfieldWrapper     = document.getElementById('playfield-wrapper'),
         playfield            = document.createElement('div'),
         cards                = [],
@@ -186,7 +185,7 @@ var Level = function (lvlParams, pics, cardDimensions) {
             }
 
             if (matchCount === (lvlParams.rows * lvlParams.cols) / lvlParams.requiredMatches) {
-                playfieldWrapper.className = 'win';
+                playfieldWrapper.style.top = (lvlParams.rows * (cardDimensions.height + cardDimensions.gutter) / 2) + cardDimensions.unit;
                 window.setTimeout(function () {
                     playfield.className = 'play-field win';
                     self.onwin(self.totalClicksCount, Math.round(((lvlParams.rows * lvlParams.cols) * 100) / self.totalClicksCount));

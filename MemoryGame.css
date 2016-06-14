@@ -280,8 +280,7 @@ p strong {
 
 .win-text {
     opacity: 0;
-    z-index: -1;
-    font-size: 0;
+    z-index: 1;
     margin-top: 0;
     text-shadow: -1px -1px #C18005, 1px -1px #C18005, -1px 1px #C18005, 1px 1px #C18005;
     -webkit-transition: all 1.5s ease 0.5s;
@@ -291,6 +290,4 @@ p strong {
 #playfield-wrapper.win .win-text {
     font-size: 100px;
     opacity: 1;
-    z-index: 1;
-    margin-top: -50px;
 }
