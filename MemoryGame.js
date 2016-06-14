@@ -115,7 +115,7 @@ var Level = function (lvlParams, pics, cardDimensions) {
             playfieldWrapper.appendChild(playfield);
         },
         play = function (event) {
-            var srcElement = event.srcElement;
+            var srcElement = event.target;
             if (srcElement.classList.contains('face')) {
                 srcElement = srcElement.parentNode;
             }
