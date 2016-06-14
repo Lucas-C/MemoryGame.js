@@ -1,0 +1,45 @@
+{
+  "pics": [
+    "http://bluebuddies.com/ubb/Avatars/Papa_Smurf_Walking_Smiling.jpg",
+    "http://bluebuddies.com/ubb/Avatars/Lazy_Smurf_Lying_on_Back.jpg",
+    "http://bluebuddies.com/help/jpg/Handy_Smurf.jpg",
+    "http://bluebuddies.com/help/jpg/BrainySmurf.jpg",
+    "http://bluebuddies.com/ubb/Avatars/Harmony_Smurf.jpg",
+    "http://bluebuddies.com/help/jpg/Painter_Smurf.jpg",
+    "http://bluebuddies.com/help/jpg/Hefty_Smurf.jpg",
+    "http://bluebuddies.com/help/jpg/Vanity_Smurf.jpg",
+    "http://bluebuddies.com/ubb/Avatars/Jokey_Smurf.jpg",
+    "http://bluebuddies.com/help/jpg/Smurfette.jpg",
+    "http://bluebuddies.com/ubb/Avatars/Poet_Smurf.jpg",
+    "http://bluebuddies.com/help/jpg/GrouchySmurf.jpg",
+    "http://bluebuddies.com/help/jpg/Baker_Smurf.jpg",
+    "http://bluebuddies.com/ubb/Avatars/Smurf_Running_with_Cake.jpg"
+  ],
+  "cardDimensions": {
+    "unit": "vh",
+    "gutter": 1,
+    "height": 15,
+    "width": 15
+  },
+  "lvls": {
+    "easy": {
+      "rows": 4,
+      "cols": 5,
+      "requiredMatches": 2,
+      "keptRevealed": 1
+    },
+    "medium": {
+      "rows": 4,
+      "cols": 6,
+      "requiredMatches": 3,
+      "keptRevealed": 2
+    },
+    "hard": {
+      "rows": 4,
+      "cols": 7,
+      "requiredMatches": 2,
+      "keptRevealed": 0,
+      "panicMode": true
+    }
+  }
+}
