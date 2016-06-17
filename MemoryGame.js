@@ -34,7 +34,8 @@ var PULSE_DURATION = 1000,
 var MemoryGame = function (gameData) {
     'use strict';
 
-    this.changeLevel = function (btn, levelName) {
+    var changeLevel = function () {
+        var btn = this;
         // We update the buttons states:
         [].forEach.call(document.getElementsByClassName('lvlButton'), function(btn) {
             btn.disabled = false;
@@ -61,8 +62,17 @@ var MemoryGame = function (gameData) {
         };
     };
 
+    var lvlList = document.getElementsByClassName('lvlList')[0];
+    Object.keys(gameData.lvls).forEach(function (levelName) {
+        var button = document.createElement('button');
+        button.className = 'lvlButton';
+        button.onclick = changeLevel;
+        button.textContent = levelName;
+        lvlList.appendChild(button);
+    });
+    
     var firstLvlButton = document.getElementsByClassName('lvlButton')[0];
-    this.changeLevel(firstLvlButton);
+    firstLvlButton.click();
 };
 
 var Level = function (lvlParams, pics, cardDimensions) {
