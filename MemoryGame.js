@@ -53,14 +53,28 @@ var MemoryGame = function (gameData) {
             currentLvl = new Level(lvlParams, gameData.pics, gameData.cardDimensions);
 
         // We set the help message
-        var infoTextNode = document.getElementById('game-info');
-        infoTextNode.innerHTML = 'Click the cards to reveal <strong>' + lvlParams.requiredMatches + '</strong> matches';
+        if (gameData.labels.instructions) {
+            var infoTextNode = document.getElementById('game-info');
+            infoTextNode.innerHTML = gameData.labels.instructions.replace('{{requiredMatches}}', lvlParams.requiredMatches);
+        }
 
         // We set the victory message
-        currentLvl.onwin = function (clicks, prc) {
-            infoTextNode.innerHTML = 'You\'ve found all matches in <strong>' + clicks + '</strong> clicks with <strong>' + prc + '%</strong> efficiency';
-        };
+        if (gameData.labels.stats) {
+            currentLvl.onwin = function (clicks, sucessPercent) {
+                infoTextNode.innerHTML = gameData.labels.stats.replace('{{clicks}}', clicks).replace('{{sucessPercent}}', sucessPercent);
+            };
+        }
     };
+
+    if (gameData.labels.title) {
+        document.getElementsByTagName('title')[0].innerHTML = gameData.labels.title;
+    }
+    if (gameData.labels.header) {
+        document.getElementsByTagName('h1')[0].innerHTML = gameData.labels.header;
+    }
+    if (gameData.labels.victory) {
+        document.getElementsByClassName('win-text')[0].innerHTML = gameData.labels.victory;
+    }
 
     var lvlList = document.getElementsByClassName('lvlList')[0];
     Object.keys(gameData.lvls).forEach(function (levelName) {
@@ -70,7 +84,7 @@ var MemoryGame = function (gameData) {
         button.textContent = levelName;
         lvlList.appendChild(button);
     });
-    
+
     var firstLvlButton = document.getElementsByClassName('lvlButton')[0];
     firstLvlButton.click();
 };

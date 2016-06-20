@@ -1,4 +1,9 @@
 {
+  "labels": {
+    "instructions": "Click the cards to reveal <strong>{{requiredMatches}}</strong> matches",
+    "stats": "You've found all matches in <strong>{{clicks}}</strong> clicks with <strong>{{sucessPercent}}%</strong> efficiency",
+    "victory": "You Win !"
+  },
   "pics": [
     "http://bluebuddies.com/ubb/Avatars/Papa_Smurf_Walking_Smiling.jpg",
     "http://bluebuddies.com/ubb/Avatars/Lazy_Smurf_Lying_on_Back.jpg",

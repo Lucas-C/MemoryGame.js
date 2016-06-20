@@ -1,4 +1,9 @@
 {
+  "labels": {
+    "instructions": "Click the cards to reveal <strong>{{requiredMatches}}</strong> matches",
+    "stats": "You've found all matches in <strong>{{clicks}}</strong> clicks with <strong>{{sucessPercent}}%</strong> efficiency",
+    "victory": "You Win !"
+  },
   "cardDimensions": {
     "unit": "px",
     "gutter": 10,
