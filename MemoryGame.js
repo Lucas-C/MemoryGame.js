@@ -72,7 +72,10 @@ var MemoryGame = function (gameData) {
     if (gameData.labels.header) {
         document.getElementsByTagName('h1')[0].innerHTML = gameData.labels.header;
     }
-    if (gameData.labels.victory) {
+    if (gameData.labels.footer) {
+        document.getElementsByTagName('footer')[0].innerHTML = gameData.labels.footer;
+    }
+     if (gameData.labels.victory) {
         document.getElementsByClassName('win-text')[0].innerHTML = gameData.labels.victory;
     }
 

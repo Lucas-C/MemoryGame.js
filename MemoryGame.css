@@ -291,3 +291,10 @@ p strong {
     font-size: 100px;
     opacity: 1;
 }
+
+footer {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    padding: 1rem;
+}
